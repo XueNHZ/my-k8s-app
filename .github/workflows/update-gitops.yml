@@ -1,0 +1,72 @@
+name: Build and Update GitOps Repo
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: my-app
+  HARBOR_REGISTRY: 172.25.87.31:80
+  HARBOR_PROJECT: library
+  DEPLOY_REPO: XueNHZ/my-k8s-app-deploy
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app repo
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        run: echo "IMAGE_TAG=v${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+      - name: Checkout deploy repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.DEPLOY_REPO }}
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: deploy-repo
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Update image tag in values.yaml
+        run: |
+          cd deploy-repo
+          yq -i '.image.tag = strenv(IMAGE_TAG)' charts/my-app/values.yaml
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+
+      - name: Commit and push to deploy repo
+        run: |
+          cd deploy-repo
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -am "chore: update my-app image tag to $IMAGE_TAG [skip ci]"
+          git push origin main
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
