@@ -13,7 +13,7 @@ env:
 
 jobs:
   build-and-update:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, harbor]
     steps:
       - name: Checkout app repo
         uses: actions/checkout@v4
