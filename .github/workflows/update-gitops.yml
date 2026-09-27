@@ -29,6 +29,10 @@ jobs:
               env.http_proxy=http://172.25.80.1:7897
               env.https_proxy=http://172.25.80.1:7897
               env.no_proxy=172.25.87.31
+          buildkitd-config-inline: |
+            [registry."172.25.87.31:80"]
+              http = true
+              insecure = true
 
       - name: Login to Harbor
         uses: docker/login-action@v3
