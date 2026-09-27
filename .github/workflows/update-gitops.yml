@@ -7,9 +7,9 @@ on:
 
 env:
   IMAGE_NAME: my-app
-  HARBOR_REGISTRY: 172.25.87.31:80
-  HARBOR_PROJECT: library
-  DEPLOY_REPO: XueNHZ/my-k8s-app-deploy
+  HARBOR_REGISTRY: ${{ secrets.HARBOR_REGISTRY }}
+  HARBOR_PROJECT: ${{ secrets.HARBOR_PROJECT }}
+  DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
 
 jobs:
   build-and-update:
@@ -26,11 +26,11 @@ jobs:
         with:
           driver-opts: |
               network=host
-              env.http_proxy=http://172.25.80.1:7897
-              env.https_proxy=http://172.25.80.1:7897
-              env.no_proxy=172.25.87.31
+              env.http_proxy=${{ secrets.BUILD_HTTP_PROXY }}
+              env.https_proxy=${{ secrets.BUILD_HTTP_PROXY }}
+              env.no_proxy=${{ secrets.HARBOR_HOST }}
           buildkitd-config-inline: |
-            [registry."172.25.87.31:80"]
+            [registry."${{ secrets.HARBOR_REGISTRY }}"]
               http = true
               insecure = true
 
