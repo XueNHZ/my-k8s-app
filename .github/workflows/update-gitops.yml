@@ -11,6 +11,10 @@ env:
   HARBOR_PROJECT: ${{ secrets.HARBOR_PROJECT }}
   DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
 
+concurrency:
+  group: gitops-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-and-update:
     runs-on: [self-hosted, linux, x64, harbor]
@@ -33,6 +37,26 @@ jobs:
             [registry."${{ secrets.HARBOR_REGISTRY }}"]
               http = true
               insecure = true
+      - name: Validate Harbor configuration
+        shell: bash
+        run: |
+            set -euo pipefail
+            test -n "${HARBOR_REGISTRY}" || {
+             echo "HARBOR_REGISTRY secret is missing"
+             exit 1
+          }
+           test -n "${HARBOR_USERNAME}" || {
+             echo "HARBOR_USERNAME secret is missing"
+             exit 1
+          }
+           test -n "${HARBOR_PASSWORD}" || {
+             echo "HARBOR_PASSWORD secret is missing"
+             exit 1
+          }
+        env:
+          HARBOR_REGISTRY: ${{ secrets.HARBOR_REGISTRY }}
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
 
       - name: Login to Harbor
         uses: docker/login-action@v3
