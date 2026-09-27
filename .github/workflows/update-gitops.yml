@@ -57,8 +57,19 @@ jobs:
 
       - name: Install yq
         run: |
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
+           set -euo pipefail
+
+           YQ_DIR="$RUNNER_TEMP/bin"
+           mkdir -p "$YQ_DIR"
+
+           curl --fail --location --show-error --retry 5 \
+                -o "$YQ_DIR/yq" \
+                https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+
+           chmod +x "$YQ_DIR/yq"
+           echo "$YQ_DIR" >> "$GITHUB_PATH"
+
+           "$YQ_DIR/yq" --version
 
       - name: Update image tag in values.yaml
         run: |
