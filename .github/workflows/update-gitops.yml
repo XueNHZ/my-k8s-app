@@ -44,15 +44,15 @@ jobs:
             test -n "${HARBOR_REGISTRY}" || {
              echo "HARBOR_REGISTRY secret is missing"
              exit 1
-          }
-           test -n "${HARBOR_USERNAME}" || {
+            }
+            test -n "${HARBOR_USERNAME}" || {
              echo "HARBOR_USERNAME secret is missing"
              exit 1
-          }
-           test -n "${HARBOR_PASSWORD}" || {
+            }
+            test -n "${HARBOR_PASSWORD}" || {
              echo "HARBOR_PASSWORD secret is missing"
              exit 1
-          }
+            }
         env:
           HARBOR_REGISTRY: ${{ secrets.HARBOR_REGISTRY }}
           HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
