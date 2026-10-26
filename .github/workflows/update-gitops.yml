@@ -64,6 +64,8 @@ jobs:
           registry: ${{ env.HARBOR_REGISTRY }}
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
+        env:
+          DOCKER_CONFIG: ${{ runner.temp }}/.docker-temp
 
       - name: Build and push image
         uses: docker/build-push-action@v5
