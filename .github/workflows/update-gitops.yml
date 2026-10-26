@@ -73,7 +73,8 @@ jobs:
           context: .
           push: true
           tags: ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          env: ${{ runner.temp }}/.docker-temp
+        env: 
+          DOCKER_CONFIG: ${{ runner.temp }}/.docker-temp
 
       - name: Checkout deploy repo
         uses: actions/checkout@v4
